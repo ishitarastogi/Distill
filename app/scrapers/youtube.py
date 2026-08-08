@@ -24,6 +24,19 @@ from youtube_transcript_api.proxies import WebshareProxyConfig
 load_dotenv()
 
 
+CHANNELS = {
+    "The Rollup": "UCC2UPtfjtdAgofzuxUPZJ6g",
+    "Bankless": "UCCRxYlYOmLE2l5wxs3ckJtg",
+    "Unchained": "UCWiiMnsnw5Isc2PP1to9nNw",
+    "DeFi Dad": "UCatItl6C7wJp9txFMbXbSTg",
+    "Indexed": "UCJw4ksSnXtd8f3iSE1ymK0w",
+    "Lightspeed": "UCjsgQKPpR7ubPQhPqjf8kyA",
+    "0x Research": "UC4UIG0VvHi6AftF0icVebfw",
+    "Bell Curve": "UC9aOLLMQht_1FKRxbQe60NA",
+    "Forward Guidance": "UCkrwgzhIBKccuDsi_SvZtnQ",
+}
+
+
 class Transcript(BaseModel):
     text: str
 
@@ -166,18 +179,6 @@ class YouTubeScraper:
 
 if __name__ == "__main__":
     from app.agent.relevance_agent import RelevanceAgent
-
-    CHANNELS = {
-        "The Rollup": "UCC2UPtfjtdAgofzuxUPZJ6g",
-        "Bankless": "UCCRxYlYOmLE2l5wxs3ckJtg",
-        "Unchained": "UCWiiMnsnw5Isc2PP1to9nNw",
-        "DeFi Dad": "UCatItl6C7wJp9txFMbXbSTg",
-        "Indexed": "UCJw4ksSnXtd8f3iSE1ymK0w",
-        "Lightspeed": "UCjsgQKPpR7ubPQhPqjf8kyA",
-        "0x Research": "UC4UIG0VvHi6AftF0icVebfw",
-        "Bell Curve": "UC9aOLLMQht_1FKRxbQe60NA",
-        "Forward Guidance": "UCkrwgzhIBKccuDsi_SvZtnQ",
-    }
 
     scraper = YouTubeScraper()
     classifier = RelevanceAgent()
