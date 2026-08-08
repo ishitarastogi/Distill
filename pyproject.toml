@@ -7,7 +7,17 @@ authors = [
     { name = "ishitarastogi", email = "ishita3099@gmail.com" }
 ]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "feedparser>=6.0.14",
+    "google-api-python-client>=2.198.0",
+    "openai>=2.53.0",
+    "pydantic>=2.13.4",
+    "python-dotenv>=1.2.2",
+    "pyyaml>=6.0.3",
+    "requests>=2.34.2",
+    "youtube-transcript-api>=1.2.4",
+]
 
 [project.scripts]
 distil = "distil:main"

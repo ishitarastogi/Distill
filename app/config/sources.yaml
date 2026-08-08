@@ -1,3 +1,7 @@
-sources: []
-
-youtube_keywords: []
+tier_1_rss:
+  - name: "Clearpool"
+    feed_url: "https://clearpool.medium.com/feed"
+  - name: "RWA.xyz Blog"
+    feed_url: "https://app.rwa.xyz/blog/rss.xml"
+  - name: "Steakhouse Kitchen"
+    feed_url: "https://kitchen.steakhouse.financial/feed"
