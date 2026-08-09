@@ -11,6 +11,7 @@ dependencies = [
     "beautifulsoup4>=4.15.0",
     "feedparser>=6.0.14",
     "google-api-python-client>=2.198.0",
+    "markdownify>=1.2.3",
     "openai>=2.53.0",
     "psycopg2-binary>=2.9.12",
     "pydantic>=2.13.4",

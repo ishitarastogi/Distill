@@ -18,19 +18,11 @@ from app.database.connection import get_session
 from app.database.models import Article
 from app.database.repository import Repository
 from app.scrapers.blog_rss import BlogPost, BlogRSSScraper
+from app.scrapers.blog_sitemap import BlogSitemapScraper, SitemapPost
 from app.scrapers.youtube import CHANNELS, Video, YouTubeScraper
 
 
 LOOKBACK_HOURS = 24 * 7
-SEARCH_DAYS = 7
-SEARCH_MAX_RESULTS = 15
-YOUTUBE_SEARCH_QUERIES = [
-    "tokenized private credit",
-    "onchain private credit",
-    "RWA tokenization",
-    "tokenized treasuries",
-    "asset tokenization blockchain",
-]
 
 
 @dataclass
@@ -138,6 +130,63 @@ def run_blog_scrape(repo: Repository) -> int:
     return saved
 
 
+BASELINE_MARKER = "[baseline - archive URL, not enriched]"
+
+
+def build_sitemap_article(post: SitemapPost, is_baseline: bool) -> Article:
+    """
+    Map a sitemap URL into the unified Article table.
+
+    Sitemaps expose a site's entire archive with no dates, so the first
+    run would otherwise enrich and summarize years of old posts. Instead
+    the first run stores them with content pre-filled with a marker,
+    which keeps them out of the enrichment queue (which looks for
+    content IS NULL). Every run after, only genuinely new URLs appear,
+    and those get content=None so they flow through normally.
+    """
+    return Article(
+        id=post.guid,
+        source_type="blog",
+        source_name=post.source_name,
+        title=post.title,
+        url=post.url,
+        published_at=post.published_at,
+        description=post.description,
+        content=BASELINE_MARKER if is_baseline else None,
+        is_relevant=True,
+        relevance_reason="Curated blog source",
+    )
+
+
+def run_sitemap_scrape(repo: Repository) -> int:
+    """Fetch sitemap-based blog sources and save new URLs."""
+
+    try:
+        posts = BlogSitemapScraper().get_all_posts()
+    except Exception as exc:
+        print(f"Sitemap scraping failed: {exc}")
+        return 0
+
+    # If the table has no sitemap-sourced rows yet, this is the first run:
+    # store the whole archive as a baseline rather than processing it.
+    existing_count = len(repo.get_recent_digests(hours=24 * 365 * 10))
+    is_baseline = existing_count == 0
+
+    if is_baseline:
+        print("First sitemap run — storing archive as baseline (no enrichment)")
+
+    saved = 0
+    for post in posts:
+        try:
+            if save_article(repo, build_sitemap_article(post, is_baseline)):
+                saved += 1
+        except Exception as exc:
+            print(f"Failed to save sitemap post {post.title!r}: {exc}")
+
+    print(f"Blog sitemap: saved {saved} new of {len(posts)} URLs seen")
+    return saved
+
+
 def classify_and_save_videos(
     repo: Repository,
     classifier: RelevanceAgent,
@@ -197,38 +246,6 @@ def run_youtube_channels(
             print(f"{channel_title}: checked {checked}, relevant {relevant}")
         except Exception as exc:
             print(f"YouTube channel failed for {channel_title}: {exc}")
-
-    return total_checked, total_relevant
-
-
-def run_youtube_search(
-    repo: Repository,
-    scraper: YouTubeScraper,
-    classifier: RelevanceAgent,
-) -> tuple[int, int]:
-    """Run broad keyword searches, isolating failures per query."""
-
-    total_checked = 0
-    total_relevant = 0
-
-    for query in YOUTUBE_SEARCH_QUERIES:
-        try:
-            videos = scraper.search_videos(
-                query=query,
-                days=SEARCH_DAYS,
-                max_results=SEARCH_MAX_RESULTS,
-            )
-            checked, relevant = classify_and_save_videos(
-                repo=repo,
-                classifier=classifier,
-                videos=videos,
-                source_type="youtube_search",
-            )
-            total_checked += checked
-            total_relevant += relevant
-            print(f"Search {query!r}: checked {checked}, relevant {relevant}")
-        except Exception as exc:
-            print(f"YouTube search failed for {query!r}: {exc}")
 
     return total_checked, total_relevant
 
@@ -328,13 +345,9 @@ def run_pipeline() -> PipelineStats:
         classifier = RelevanceAgent()
 
         stats.blog_posts_saved = run_blog_scrape(repo)
+        stats.blog_posts_saved += run_sitemap_scrape(repo)
 
         checked, relevant = run_youtube_channels(
-            repo, youtube_scraper, classifier)
-        stats.youtube_candidates_checked += checked
-        stats.youtube_relevant += relevant
-
-        checked, relevant = run_youtube_search(
             repo, youtube_scraper, classifier)
         stats.youtube_candidates_checked += checked
         stats.youtube_relevant += relevant

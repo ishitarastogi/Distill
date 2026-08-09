@@ -1,3 +1,8 @@
+# Blog and newsletter sources, grouped by how their content can be reached.
+# Tier order reflects reliability: RSS is a stable format built for this,
+# sitemaps are a fallback, and HTML scraping is last resort because it
+# breaks whenever a site redesigns.
+
 tier_1_rss:
   - name: "Clearpool"
     feed_url: "https://clearpool.medium.com/feed"
@@ -5,3 +10,34 @@ tier_1_rss:
     feed_url: "https://app.rwa.xyz/blog/rss.xml"
   - name: "Steakhouse Kitchen"
     feed_url: "https://kitchen.steakhouse.financial/feed"
+
+# Sitemaps list every page on a site. Most have no dates, so "what's new"
+# can't be read from the sitemap itself — instead every matching URL is
+# saved, and the database's primary key check skips ones already stored.
+# url_pattern filters the sitemap down to actual articles, since a sitemap
+# also contains /about, /contact, /terms, etc.
+tier_2_sitemap:
+  - name: "3Jane"
+    sitemap_url: "https://3jane.xyz/sitemap.xml"
+    url_pattern: "/reports/"
+  - name: "Figure"
+    sitemap_url: "https://www.figure.com/sitemap-0.xml"
+    url_pattern: "/blog/"
+  - name: "Maple"
+    sitemap_url: "https://maple.finance/sitemap-0.xml"
+    url_pattern: "/insights/"
+  - name: "Centrifuge"
+    sitemap_url: "https://centrifuge.io/sitemap.xml"
+    url_pattern: "/blog/"
+  - name: "Cap"
+    sitemap_url: "https://www.cap.app/sitemap.xml"
+    url_pattern: "/blog/"
+  - name: "Tokenized Newsletter"
+    sitemap_url: "https://newsletter.tokenizedpod.com/sitemap.xml"
+    url_pattern: "/p/"
+  - name: "Securitize"
+    sitemap_url: "https://securitize.io/sitemap.xml"
+    url_pattern: "/learn/"
+  - name: "Hamilton Lane"
+    sitemap_url: "https://www.hamiltonlane.com/sitemap.xml"
+    url_pattern: "/insight"

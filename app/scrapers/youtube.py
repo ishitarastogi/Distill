@@ -1,13 +1,12 @@
 """
-YouTube ingestion — Data API v3 throughout, both channel listing and
-keyword search, for one consistent documented interface instead of
-mixing free RSS with the official API.
+YouTube ingestion — Data API v3 for listing a channel's uploads.
 
 Three stages, same shape as the rest of the pipeline:
-  1. get_channel_videos() / get_search_results() — metadata only, free-ish
-     (quota cost, not money), no transcript fetched yet.
-  2. classify_relevance() — cheap LLM check per candidate, filters out
-     sponsor-boilerplate false positives that pure keyword matching misses.
+  1. get_channel_videos() — metadata only, no transcript fetched yet.
+     Costs quota, not money.
+  2. Relevance classification (in runner.py) — cheap LLM check per
+     candidate, filters out sponsor-boilerplate false positives that
+     pure keyword matching misses.
   3. add_transcripts() — only called on videos that survive step 2.
 """
 
@@ -69,7 +68,7 @@ class YouTubeScraper:
             )
         self.transcript_api = YouTubeTranscriptApi(proxy_config=proxy_config)
 
-    # ---------- Stage 1a: list a channel's recent uploads ----------
+    # ---------- Stage 1: list a channel's recent uploads ----------
 
     def get_channel_videos(self, channel_id: str, channel_title: str, hours: int = 24 * 7) -> List[Video]:
         """
@@ -108,50 +107,14 @@ class YouTubeScraper:
 
         return self._filter_shorts(videos)
 
-    # ---------- Stage 1b: keyword search across all of YouTube ----------
-
-    def search_videos(self, query: str, days: int = 7, max_results: int = 15) -> List[Video]:
-        """Costs 100 quota units per call."""
-        published_after = (
-            datetime.now(timezone.utc) - timedelta(days=days)
-        ).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-        request = self.youtube.search().list(
-            q=query,
-            part="snippet",
-            type="video",
-            order="relevance",
-            publishedAfter=published_after,
-            maxResults=max_results,
-        )
-        response = request.execute()
-
-        videos = []
-        for item in response.get("items", []):
-            snippet = item["snippet"]
-            video_id = item["id"]["videoId"]
-            videos.append(Video(
-                title=snippet["title"],
-                url=f"https://www.youtube.com/watch?v={video_id}",
-                video_id=video_id,
-                channel_id=snippet["channelId"],
-                channel_title=snippet["channelTitle"],
-                published_at=datetime.strptime(
-                    snippet["publishedAt"], "%Y-%m-%dT%H:%M:%SZ"
-                ).replace(tzinfo=timezone.utc),
-                description=snippet.get("description", ""),
-            ))
-
-        return self._filter_shorts(videos)
-
     def _filter_shorts(self, videos: List[Video]) -> List[Video]:
         """
-        The Data API doesn't flag Shorts directly in search results the
-        way RSS links did. Real duration requires a separate videos.list
-        call (1 unit each) — worth adding once volume justifies the
-        extra quota cost. For now this is a pass-through; Shorts get
-        caught downstream by the relevance classifier instead, since a
-        Short's description is usually too thin to pass anyway.
+        The Data API doesn't flag Shorts directly the way RSS links did.
+        Real duration requires a separate videos.list call (1 unit each) —
+        worth adding once volume justifies the extra quota cost. For now
+        this is a pass-through; Shorts get caught downstream by the
+        relevance classifier instead, since a Short's description is
+        usually too thin to pass anyway.
         """
         return videos
 
@@ -187,7 +150,7 @@ if __name__ == "__main__":
 
     for name, channel_id in CHANNELS.items():
         candidates = scraper.get_channel_videos(channel_id, name, hours=24 * 7)
-        print(f"\n{name}: {len(candidates)} candidates (structural filter only)")
+        print(f"\n{name}: {len(candidates)} candidates")
 
         confirmed = []
         for video in candidates:

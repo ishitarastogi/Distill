@@ -118,3 +118,14 @@ class Repository:
             article.digest_title = title
             article.summary = summary
             self.session.commit()
+
+    def get_recent_digests(self, hours: int = 24 * 7):
+        """Articles that have a digest summary, within the time window —
+        this is the email step's input: everything ready to be ranked
+        and sent."""
+        from datetime import datetime, timedelta, timezone
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+        return self.session.query(Article).filter(
+            Article.summary.isnot(None),
+            Article.published_at >= cutoff,
+        ).all()
