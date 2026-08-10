@@ -1,7 +1,18 @@
 # Distil
-
+"Distill watches 9 YouTube channels and 15 blog and newsletter sources for content about real-world assets, and turns whatever's actually relevant into a weekly email. Most of what a source publishes isn't relevant, though — so an AI classifier checks each YouTube video before anything expensive happens, reading the title and description and deciding yes or no, with a reason. Blog sources skip that check, since I hand-picked those and trust everything they publish. What passes gets the real content pulled, summarized, ranked, and sent out."
 Distil is a daily AI news aggregator for RWA, private credit, and related crypto / finance infrastructure. It pulls from YouTube RSS feeds, blog RSS feeds, newsletters, and configured web URLs; stores articles in PostgreSQL; enriches articles with full content; extracts tracked protocol mentions; summarizes and ranks the best items against a user profile; and emails a short daily digest.
 
+1. Fetch. Get videos from the 9 channels, get post links from the 15 blog sources.
+
+2. Classify. Every YouTube video gets its title and description checked by AI — relevant or not, with a reason. Blogs skip this, they're already trusted.
+
+3. Save. Everything goes into one Postgres table, whether it's a video or a blog post.
+
+4. Get real content. For videos that passed, pull the actual transcript. For blog posts, fetch the real webpage and clean it up.
+
+5. Summarize. AI writes a short title and 2-3 sentence summary for everything that now has real content.
+
+6. Rank and send. AI ranks everything by relevance, picks the top items, formats them into an email, sends it.
 ## Folder Structure
 
 ```text

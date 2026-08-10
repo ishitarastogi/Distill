@@ -13,6 +13,7 @@ Three stages, same shape as the rest of the pipeline:
 import os
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
+import yaml
 from googleapiclient.discovery import build
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -23,17 +24,20 @@ from youtube_transcript_api.proxies import WebshareProxyConfig
 load_dotenv()
 
 
-CHANNELS = {
-    "The Rollup": "UCC2UPtfjtdAgofzuxUPZJ6g",
-    "Bankless": "UCCRxYlYOmLE2l5wxs3ckJtg",
-    "Unchained": "UCWiiMnsnw5Isc2PP1to9nNw",
-    "DeFi Dad": "UCatItl6C7wJp9txFMbXbSTg",
-    "Indexed": "UCJw4ksSnXtd8f3iSE1ymK0w",
-    "Lightspeed": "UCjsgQKPpR7ubPQhPqjf8kyA",
-    "0x Research": "UC4UIG0VvHi6AftF0icVebfw",
-    "Bell Curve": "UC9aOLLMQht_1FKRxbQe60NA",
-    "Forward Guidance": "UCkrwgzhIBKccuDsi_SvZtnQ",
-}
+CONFIG_PATH = "app/config/sources.yaml"
+
+
+def load_channels() -> dict[str, str]:
+    """Reads the youtube_channels list from sources.yaml."""
+    with open(CONFIG_PATH) as f:
+        config = yaml.safe_load(f)
+    return {
+        source["name"]: source["channel_id"]
+        for source in config.get("youtube_channels", [])
+    }
+
+
+CHANNELS = load_channels()
 
 
 class Transcript(BaseModel):

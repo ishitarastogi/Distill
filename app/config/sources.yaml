@@ -41,3 +41,25 @@ tier_2_sitemap:
   - name: "Hamilton Lane"
     sitemap_url: "https://www.hamiltonlane.com/sitemap.xml"
     url_pattern: "/insight"
+
+# YouTube channel IDs are not @handles. Look them up once by hand
+# and store the stable channel_id value here for Data API calls.
+youtube_channels:
+  - name: "The Rollup"
+    channel_id: "UCC2UPtfjtdAgofzuxUPZJ6g"
+  - name: "Bankless"
+    channel_id: "UCCRxYlYOmLE2l5wxs3ckJtg"
+  - name: "Unchained"
+    channel_id: "UCWiiMnsnw5Isc2PP1to9nNw"
+  - name: "DeFi Dad"
+    channel_id: "UCatItl6C7wJp9txFMbXbSTg"
+  - name: "Indexed"
+    channel_id: "UCJw4ksSnXtd8f3iSE1ymK0w"
+  - name: "Lightspeed"
+    channel_id: "UCjsgQKPpR7ubPQhPqjf8kyA"
+  - name: "0x Research"
+    channel_id: "UC4UIG0VvHi6AftF0icVebfw"
+  - name: "Bell Curve"
+    channel_id: "UC9aOLLMQht_1FKRxbQe60NA"
+  - name: "Forward Guidance"
+    channel_id: "UCkrwgzhIBKccuDsi_SvZtnQ"
