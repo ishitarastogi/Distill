@@ -52,7 +52,6 @@ class Video(BaseModel):
     channel_title: str
     published_at: datetime
     description: str
-    duration_seconds: Optional[int] = None
     transcript: Optional[str] = None
 
 
